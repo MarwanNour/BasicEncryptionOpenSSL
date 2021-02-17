@@ -3,6 +3,10 @@
 import os
 import sys
 
+def sign(input_file, output_signature_file, ca_sk_file):
+    os.system("openssl dgst -sha256 -sign " + ca_sk_file +  " -out " + output_signature_file + " < " + input_file)
+
+
 # input: identity, public key, CA's sk 
 
 if (len(sys.argv) != 4):
@@ -42,5 +46,5 @@ with open(os.getcwd() + "/" + file_name, "w") as f:
 
 # Sign with CA sk
 print("Signing...")
-os.system("openssl dgst -sha256 -sign " + ca_sk_file +  " -out " + identity + "_signature.bin < " + file_name)
+sign(file_name, identity + "_signature.bin", ca_sk_file)
 print("Done")

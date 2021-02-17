@@ -64,7 +64,7 @@ with open(os.getcwd() + "/serverfiles/encrypted_file.bin", "wb") as f:
 
 ############ DECRYPT ############
 print("DECRYPTING ...\n")
-# Decrypt encrypted sym key with sk TODO FIX HERE
+# Decrypt encrypted sym key with sk
 os.system("openssl rsautl -decrypt -inkey serverfiles/private.pem < serverfiles/encrypted_sym.txt > serverfiles/decrypted_sym.txt")
 
 # Read decrypted sym key into variable
