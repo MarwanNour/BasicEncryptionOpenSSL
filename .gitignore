@@ -1,5 +1,7 @@
-Basic/clientfiles/*
-Basic/serverfiles/*
+Basic/clientfiles
+Basic/serverfiles
 *.pem
 *.bin
 Certificates/*.txt
+Certificates/clientfiles
+Certificates/serverfiles

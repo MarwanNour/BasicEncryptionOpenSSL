@@ -3,19 +3,20 @@
 import os
 import sys
 
-def verify(original_file, ca_pk_file, cert_file):
-    os.system("openssl dgst -sha256 -verify " + ca_pk_file +  " -signature " + cert_file + " < " + original_file)
+def verify(original_file, ca_pk_file, cert_file, output_file):
+    os.system("openssl dgst -sha256 -verify " + ca_pk_file +  " -signature " + cert_file + " < " + original_file + " > " + output_file)
 
 # input: original file, CA's pk, certificate, 
 
-if (len(sys.argv) != 4):
+if (len(sys.argv) != 5):
     print("Incorrect syntax")
-    print("python3 cert_verify.py <original_file> <CA_pk> <cert_file>")
+    print("python3 cert_verify.py <original_file> <CA_pk> <cert_file> <output_file>")
     sys.exit(1)
 
 original_file = sys.argv[1]
 ca_pk_file = sys.argv[2]
 cert_file = sys.argv[3]
+output_file = sys.argv[4]
 
 # print("arg[1] = " + original_file)
 # print("arg[2] = " + ca_pk_file)
@@ -33,5 +34,5 @@ if (not os.path.isfile(os.getcwd() + "/" + cert_file)):
 
 # Verify
 print("Verifying...")
-verify(original_file, ca_pk_file, cert_file)
+verify(original_file, ca_pk_file, cert_file, output_file)
 print("Done")

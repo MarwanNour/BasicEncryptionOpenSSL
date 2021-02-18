@@ -4,32 +4,26 @@ import socket
 import os
 import sys
 
-# input: identity, cert_file
+# input: original file, cert_file
 if(len(sys.argv) != 3):
     print("Incorrect syntax")
-    print("python3 server.py <identity> <cert_file>")
+    print("python3 server.py <original_file> <cert_file>")
     sys.exit(1)
 
-identity = sys.argv[1]
+original_file = sys.argv[1]
 cert_file = sys.argv[2]
 
-print(identity)
-print(cert_file)
+# print(original_file)
+# print(cert_file)
 
-if (not os.path.isfile(os.getcwd() + "/serverfiles/" + cert_file)):
+if (not os.path.isfile(original_file)):
+    print("Original file doesn't exist")
+    sys.exit(1)
+
+if (not os.path.isfile(cert_file)):
     print("Certificate file doesn't exist")
     sys.exit(1)
 
-# Use openssl to generate the keys
-os.system("openssl genrsa -out serverfiles/private.pem 2048")
-os.system("openssl rsa -in serverfiles/private.pem -pubout -out serverfiles/public.pem")
-
-# Read pk file into string variable
-pubfile_contents = ''
-with open(os.getcwd() + "/serverfiles/public.pem", "r") as f:
-    pubfile_contents = f.read()
-
-print(pubfile_contents)
 
 # Create socket
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -39,16 +33,19 @@ host = socket.gethostname()
 port = 10001
 
 ############ SEND FILE AND CERTIFICATE TO CLIENT ############
-
 # Read file into bytes variable
 original_file_contents = b''
-with open(os.getcwd() + "/serverfiles/" + identity + "_file_to_sign.txt", "rb") as f:
+with open(original_file, "rb") as f:
     original_file_contents = f.read()
+
+print(original_file_contents)
 
 # Read cert into bytes variable
 cert_file_contents = b''
-with open(os.getcwd() + "/serverfiles/" + cert_file, "rb") as f:
+with open(cert_file, "rb") as f:
     cert_file_contents = f.read()
+
+print(cert_file_contents)
 
 # Bind
 server_socket.bind((host, port))

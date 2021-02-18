@@ -5,21 +5,20 @@ import os
 import string
 import random
 import sys
-import cert_verify
 
 # Helper function for generating random strings
 def get_random_string(N):
     res = ''.join(random.choices(string.ascii_uppercase + string.digits, k = N))
     return res
 
-
-# input: CA_pk
-if(len(sys.argv) != 2):
+# input: CA_pk, verify_output_file
+if(len(sys.argv) != 3):
     print("Incorrect syntax")
-    print("python3 client.py <CA_pk>")
+    print("python3 client.py <CA_pk> <verify_output_file>")
     sys.exit(1)
     
 CA_pk = sys.argv[1]
+verify_output_file = sys.argv[2]
 
 # Create socket
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -36,41 +35,46 @@ with client_socket as s:
     s.connect((host, port))
     server_original_file_contents = s.recv(1024)
 
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
 # Connect to server, receive cert
 with client_socket as s:
     s.connect((host, port))
     server_cert_file_contents = s.recv(1024)
 
 # Write file to file
-with open(os.getcwd() + "/clientfiles/server_original_file.txt", "wb") as f:
+with open("clientfiles/server_original_file.txt", "wb") as f:
     f.write(server_original_file_contents)
 
+print(server_original_file_contents)
+
 # Write cert to file
-with open(os.getcwd() + "/clientfiles/server_cert_file.bin", "wb") as f:
+with open("clientfiles/server_cert_file.bin", "wb") as f:
     f.write(server_cert_file_contents)
     
+print(server_cert_file_contents)
 
 ############ VERIFY ############
-cert_verify.verify(os.getcwd() + "/clientfiles/server_original_file.txt", CA_pk, os.getcwd() + "/clientfiles/server_cert_file.bin")
+os.system("openssl dgst -sha256 -verify " + CA_pk +  " -signature clientfiles/server_cert_file.bin < clientfiles/server_original_file.txt > clientfiles/" + verify_output_file)
 
+verify_result = ''
+with open("clientfiles/" + verify_output_file, "r") as f:
+    verify_result = f.readlines()[0]
 
-# Problem: stopping when verification fails
-# Stupid Solution: write output to file and read from it
-"""
-Verification OK
+print(verify_result)
 
-Verification Failure
-"""
+if(verify_result != 'Verified OK\n'):
+    print("Verification failed")
+    sys.exit(1)
 
+# Extract server pk from file
+server_pk = ''
+with open("clientfiles/server_original_file.txt", "r") as f:
+    server_pk = f.read()
 
+server_pk = server_pk.split("\n", 1)[1] # Removes first line in the file (which is the identity)
 
-
-
-
-
-
-
-
+server_pk = server_pk.encode()
 
 # Write server pk to file
 with open(os.getcwd() + "/clientfiles/server_pk.pem", "wb") as f:
