@@ -38,6 +38,9 @@ while True:
     print("Received Encrypted Sym Key")
     print(encrypted_sym)
 
+    # (optional) send ack
+    conn.send(b'ACK Sym key')
+
     # Write encrypted sym key to file
     with open(os.getcwd() + "/serverfiles/encrypted_sym.txt", "wb") as f:
         f.write(encrypted_sym)
@@ -47,6 +50,9 @@ while True:
     print("Received Encrypted File")
     print(encrypted_file)
 
+    # (optional) send ack
+    conn.send(b'ACK Enc file')
+    
     # Write encrypted file to file
     with open(os.getcwd() + "/serverfiles/encrypted_file.bin", "wb") as f:
         f.write(encrypted_file)

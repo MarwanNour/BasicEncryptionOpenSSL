@@ -53,6 +53,9 @@ client_socket.send(encrypted_sym_contents)
 print("Sent encrypted sym file")
 print(encrypted_sym_contents)
 
+# (optional) recv ack
+ack = client_socket.recv(1024)
+print(ack)
 
 # Encrypt file with symmetric key
 print("ENCRYPTING FILE ...\n")
@@ -67,6 +70,10 @@ with open(os.getcwd() + "/clientfiles/encrypted_file.bin", "rb") as f:
 client_socket.send(encrypted_file_contents)
 print("Sent encrypted file")
 print(encrypted_file_contents)
+
+# (optional) recv ack
+ack = client_socket.recv(1024)
+print(ack)
 
 # Close socket
 client_socket.close()

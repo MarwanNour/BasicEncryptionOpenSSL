@@ -30,30 +30,29 @@ port = 10001
 ############ GET FILE AND CERT FROM SERVER ############
 server_original_file_contents = b''
 server_cert_file_contents = b''
-# Connect to server, receive file
-with client_socket as s:
-    s.connect((host, port))
-    server_original_file_contents = s.recv(1024)
-
-client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-# Connect to server, receive cert
-with client_socket as s:
-    s.connect((host, port))
-    server_cert_file_contents = s.recv(1024)
+# Connect to server, receive file and cert
+client_socket.connect((host, port))
+server_original_file_contents = client_socket.recv(1024)
+print("Received file")
+print(server_original_file_contents)
+# (optional) send ack
+client_socket.send(b'ACK File')
 
 # Write file to file
 with open("clientfiles/server_original_file.txt", "wb") as f:
     f.write(server_original_file_contents)
 
-print(server_original_file_contents)
+
+server_cert_file_contents = client_socket.recv(1024)
+print("Received cert")
+print(server_cert_file_contents)
+# (optional) send ack
+client_socket.send(b'ACK Cert')
 
 # Write cert to file
 with open("clientfiles/server_cert_file.bin", "wb") as f:
     f.write(server_cert_file_contents)
     
-print(server_cert_file_contents)
-
 ############ VERIFY ############
 os.system("openssl dgst -sha256 -verify " + CA_pk +  " -signature clientfiles/server_cert_file.bin < clientfiles/server_original_file.txt > clientfiles/" + verify_output_file)
 
@@ -80,6 +79,7 @@ server_pk = server_pk.encode()
 with open(os.getcwd() + "/clientfiles/server_pk.pem", "wb") as f:
     f.write(server_pk)
 
+############ SEND ENCRYPTED KEY AND ENCRYPTED FILE TO SERVER ############
 # Generate random symmetric key
 sym_key = get_random_string(8)
 print("Random Sym Key : " + (str)(sym_key))
@@ -97,6 +97,14 @@ encrypted_sym_contents = b''
 with open(os.getcwd() + "/clientfiles/encrypted_sym.txt", "rb") as f:
     encrypted_sym_contents = f.read()
 
+# Send encrypted key
+client_socket.send(encrypted_sym_contents)
+print("Sent encrypted sym file")
+print(encrypted_sym_contents)
+
+# (optional) recv ack
+ack = client_socket.recv(1024)
+print(ack)
 
 # Encrypt file with symmetric key
 print("ENCRYPTING FILE ...\n")
@@ -107,15 +115,14 @@ encrypted_file_contents = b''
 with open(os.getcwd() + "/clientfiles/encrypted_file.bin", "rb") as f:
     encrypted_file_contents = f.read()
 
-############ SEND ENCRYPTED KEY AND ENCRYPTED FILE TO SERVER ############
-# Connect to server, Send encrypted key
-client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-with client_socket as s:
-    s.connect((host, port))
-    s.sendall(encrypted_sym_contents)
+# Send encrypted file
+client_socket.send(encrypted_file_contents)
+print("Sent encrypted file")
+print(encrypted_file_contents)
 
-# Connect to server, Send encrypted file
-client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-with client_socket as s:
-    s.connect((host, port))
-    s.sendall(encrypted_file_contents)
+# (optional) recv ack
+ack = client_socket.recv(1024)
+print(ack)
+
+# Close socket
+client_socket.close()
