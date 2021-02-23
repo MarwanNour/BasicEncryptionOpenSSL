@@ -21,9 +21,8 @@ server_pk = b''
 
 ############ GET PUBLIC KEY FROM SERVER ############
 # Connect to server, receive pk
-with client_socket as s:
-    s.connect((host, port))
-    server_pk = s.recv(1024)
+client_socket.connect((host, port))
+server_pk = client_socket.recv(1024)
 
 print("Received: ", repr(server_pk))
 
@@ -31,6 +30,7 @@ print("Received: ", repr(server_pk))
 with open(os.getcwd() + "/clientfiles/server_pk.pem", "wb") as f:
     f.write(server_pk)
 
+############ SEND ENCRYPTED KEY AND ENCRYPTED FILE TO SERVER ############
 # Generate random symmetric key
 sym_key = get_random_string(8)
 print("Random Sym Key : " + (str)(sym_key))
@@ -48,6 +48,11 @@ encrypted_sym_contents = b''
 with open(os.getcwd() + "/clientfiles/encrypted_sym.txt", "rb") as f:
     encrypted_sym_contents = f.read()
 
+# Send encrypted key
+client_socket.send(encrypted_sym_contents)
+print("Sent encrypted sym file")
+print(encrypted_sym_contents)
+
 
 # Encrypt file with symmetric key
 print("ENCRYPTING FILE ...\n")
@@ -58,15 +63,10 @@ encrypted_file_contents = b''
 with open(os.getcwd() + "/clientfiles/encrypted_file.bin", "rb") as f:
     encrypted_file_contents = f.read()
 
-############ SEND ENCRYPTED KEY AND ENCRYPTED FILE TO SERVER ############
-# Connect to server, Send encrypted key
-client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-with client_socket as s:
-    s.connect((host, port))
-    s.sendall(encrypted_sym_contents)
+# Send encrypted file
+client_socket.send(encrypted_file_contents)
+print("Sent encrypted file")
+print(encrypted_file_contents)
 
-# Connect to server, Send encrypted file
-client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-with client_socket as s:
-    s.connect((host, port))
-    s.sendall(encrypted_file_contents)
+# Close socket
+client_socket.close()
